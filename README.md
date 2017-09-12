@@ -13,15 +13,16 @@ Approach:
   Shrink the data using spline interpolation.
   Fully-connected, feedforward network with Tensorflow: four hidden layers -
   3 x relu + softmax. The output layer's weights are not trainable and I used
-  mean squared error loss (  1). Data is shuffled before being split into
+  mean squared error loss (1). Data is shuffled before being split into
   train and test sets. Bootstrap aggregation is used to pick the batch at each
-  training step. Dropout was used at 50%.
+  training step. Dropout was used at 50% during training.
 
 Results:
 
-  With a training set of 70% my network achieves MSE of 0.06 (m/s) on the test
-  set. A large portion of the error comes from times the car is sitting still
-  and other cars are moving in the camera's view.
+  Training on 70%, my network achieves MSE of 0.06 (m/s) on my validation
+  set. A large portion of the error seems to come from times the car is sitting
+  still and other cars are moving in the camera's view. More training data is
+  needed to know if this model is actually useful.
   ...to be continued.
 
 Future Work:
@@ -33,46 +34,47 @@ Future Work:
   the current network. I originally tried using a CNN on the optic flow data,
   but with poor results, which makes sense, assuming the correlation between
   optic flow and velocity are not spatially invariant. I also think it would be
-  interesting to try to calculate the optical flow using a CNN (see 2).
+  interesting to try to calculate the optical flow using a CNN (2).
 
 Files:
 
-save_opflow.py : Dense Optical flow, calculated with OpensCV's implementation
-                of the Farneback Algorithm: 'cv2.calcOpticalFlowFarneback()'.
-                It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
-                spline interpolation. Then vectorized and saved in a .npy file.
+save_opflow.py :
+  Dense Optical flow, calculated with OpensCV's implementation
+  of the Farneback Algorithm: 'cv2.calcOpticalFlowFarneback()'.
+  It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
+  spline interpolation. Then vectorized and saved in a .npy file.
 
-avg_data.py : Average data over some window size to smooth noise. I got the best
-            results with a window size of 5.
+avg_data.py :
+  Average data over some window size to smooth noise. I got the best
+  results with a window size of 5.
 
-c2_one_hot.py : convert speeds to one-hot with a certain precision. The original
-              network used a softmax output with cross-entropy loss, but now
-              it uses the softmax layer as a hidden layer, so this is deprecated.
+c2_one_hot.py :
+  Convert speeds to one-hot with a certain precision. The original
+  network used a softmax output with cross-entropy loss, but now
+  it uses the softmax layer as a hidden layer, so this is deprecated.
 
-network.py : Tensorflow model with four hidden layers : 3 x relu + softmax
-            hidden and final layers weights are not learnable (see 1).
-            Trains model, then saves it as .ckpt. The network still loads one hot
-            labels to arrange the hidden softmax layer, obviously inefficient,
-            will change soon
+network.py :
+  Tensorflow model with four hidden layers : 3 x relu + softmax
+  hidden and final layers weights are not learnable (1).
+  Trains model, then saves it as .ckpt. The network still loads one hot
+  labels to arrange the hidden softmax layer, obviously inefficient,
+  will change soon.
 
-load_saved.py : Loads saved models by name, runs them on new data, then saves
-                the model's predictions to a .npy file
+load_saved.py :
+  Loads saved models by name, runs them on new data, then saves
+  the model's predictions to a .npy file
 
-show_vid.py : Shows videos with speed predictions in m/s and mph.
-              Used for verification purposes only.
+show_vid.py :
+  Shows videos with speed predictions in m/s and mph.
 
 * Note : lines in files where file names go are marked with '#37'
 
 Dependencies/tools:
-
     numpy==1.13.1
     opencv-python==3.3.0.9
     scipy==0.19.1
     tensorflow==1.2.1
-
     Python 3.6.2
-
-
 
 Sources:
 
