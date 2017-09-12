@@ -38,34 +38,40 @@ Future Work:
 
 Files:
 
-save_opflow.py :
-  Dense Optical flow, calculated with OpensCV's implementation
-  of the Farneback Algorithm: 'cv2.calcOpticalFlowFarneback()'.
-  It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
-  spline interpolation. Then vectorized and saved in a .npy file.
+  save_opflow.py :
 
-avg_data.py :
-  Average data over some window size to smooth noise. I got the best
-  results with a window size of 5.
+    Dense Optical flow, calculated with OpensCV's implementation
+    of the Farneback Algorithm: 'cv2.calcOpticalFlowFarneback()'.
+    It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
+    spline interpolation. Then vectorized and saved in a .npy file.
 
-c2_one_hot.py :
-  Convert speeds to one-hot with a certain precision. The original
-  network used a softmax output with cross-entropy loss, but now
-  it uses the softmax layer as a hidden layer, so this is deprecated.
+  avg_data.py :
 
-network.py :
-  Tensorflow model with four hidden layers : 3 x relu + softmax
-  hidden and final layers weights are not learnable (1).
-  Trains model, then saves it as .ckpt. The network still loads one hot
-  labels to arrange the hidden softmax layer, obviously inefficient,
-  will change soon.
+    Average data over some window size to smooth noise. I got the best
+    results with a window size of 5.
 
-load_saved.py :
-  Loads saved models by name, runs them on new data, then saves
-  the model's predictions to a .npy file
+  c2_one_hot.py :
 
-show_vid.py :
-  Shows videos with speed predictions in m/s and mph.
+    Convert speeds to one-hot with a certain precision. The original
+    network used a softmax output with cross-entropy loss, but now
+    it uses the softmax layer as a hidden layer, so this is deprecated.
+
+  network.py :
+
+    Tensorflow model with four hidden layers : 3 x relu + softmax
+    hidden and final layers weights are not learnable (1).
+    Trains model, then saves it as .ckpt. The network still loads one hot
+    labels to arrange the hidden softmax layer, obviously inefficient,
+    will change soon.
+
+  load_saved.py :
+
+    Loads saved models by name, runs them on new data, then saves
+    the model's predictions to a .npy file
+
+  show_vid.py :
+
+    Shows videos with speed predictions in m/s and mph.
 
 * Note : lines in files where file names go are marked with '#37'
 
