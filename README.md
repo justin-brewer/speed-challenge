@@ -70,6 +70,9 @@ Dependencies/tools:
     scipy==0.19.1
     tensorflow==1.2.1
 
+    Python 3.6.2
+
+
 
 Sources:
 
