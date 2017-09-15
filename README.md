@@ -1,13 +1,13 @@
 README
 
-About:
+About :
 
   This project was started in response to comma.ai's speed challenge:
   http://commachallenge.s3-us-west-2.amazonaws.com/speed_challenge_2017.tar
   Predict the speed of a moving vehicle using only its dash cam footage and
   a labeled training set.
 
-Approach:
+Approach :
 
   Calculate dense optical flow with OpenCV's Farneback implementation.
   Shrink the data using spline interpolation.
@@ -15,17 +15,21 @@ Approach:
   3 x relu + softmax. The output layer's weights are not trainable and I used
   mean squared error loss (1). Data is shuffled before being split into
   train and test sets. Bootstrap aggregation is used to pick the batch at each
-  training step. Dropout was used at 50% during training.
+  training step. 50% dropout was used during training.
 
-Results:
+Results :
 
-  Training on 70%, my network achieves MSE of 0.06 (m/s) on my validation
-  set. A large portion of the error seems to come from times the car is sitting
+  Training on 50%, my network achieves MSE of 1.8 ((m/s)^2) on my validation
+  set.
+  Training on 60%, MSE = 1.2.
+  Training on 70%, MSE = 0.06.
+
+  A large portion of the error seems to come from times the car is sitting
   still and other cars are moving in the camera's view. More training data is
   needed to know if this model is actually useful.
   ...to be continued.
 
-Future Work:
+Future Work :
 
   Other than averaging optical flow over a window of five flow frames
   (which consists of information from six video frames), this network is memoryless.
@@ -34,7 +38,9 @@ Future Work:
   the current network. I originally tried using a CNN on the optic flow data,
   but with poor results, which makes sense, assuming the correlation between
   optic flow and velocity are not spatially invariant. I also think it would be
-  interesting to try to calculate the optical flow using a CNN (2).
+  interesting to try to calculate the optical flow using a CNN (2). The softmax layer
+  needs to be extended to support speed predictions higher than the max speed in the
+  training set. Experiment with data preparation methods before training.
 
 Files:
 
@@ -45,16 +51,16 @@ Files:
     It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
     spline interpolation. Then vectorized and saved in a .npy file.
 
-  avg_data.py :
+  avg_data.py : (deprecated)
 
-    Average data over some window size to smooth noise. I got the best
-    results with a window size of 5.
+    Average data over some window size to smooth noise. I got good
+    results with a window size of 5, but am no longer using it.
 
-  c2_one_hot.py :
+  c2_one_hot.py : (deprecated)
 
     Convert speeds to one-hot with a certain precision. The original
     network used a softmax output with cross-entropy loss, but now
-    it uses the softmax layer as a hidden layer, so this is deprecated.
+    it uses the softmax layer as a hidden layer.
 
   network.py :
 
@@ -82,7 +88,7 @@ Dependencies/tools:
     tensorflow==1.2.1
     Python 3.6.2
 
-Sources:
+Sources :
 
 1) Beckham, C., & Pal, C. (2016). A simple squared-error reformulation for
   ordinal classification. arXiv preprint arXiv:1612.00775.
