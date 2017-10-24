@@ -19,28 +19,17 @@ Approach :
 
 Results :
 
-  Training on 50%, my network achieves MSE of 1.8 ((m/s)^2) on my validation
-  set.
-  Training on 60%, MSE = 1.2.
-  Training on 70%, MSE = 0.06.
-
-  A large portion of the error seems to come from times the car is sitting
-  still and other cars are moving in the camera's view. More training data is
-  needed to know if this model is actually useful.
-  ...to be continued.
+  MSE of 48.1 (awful) on the test set despite MSE of 1.8 training/validating
+  at 50/50. I belive this was due to randomly shuffling before splitting
+  the data. The optic flow calculations don't seem to change significantly
+  between subsequent frames, so this created, essentially, a lot of
+  duplication between the training and validation sets causing massive
+  overfitting.
 
 Future Work :
 
-  Other than averaging optical flow over a window of five flow frames
-  (which consists of information from six video frames), this network is memoryless.
-  I believe, adding some form of recurrence to the network will boost performance
-  significantly. I also plan to experiment with using a CNN in conjunction with
-  the current network. I originally tried using a CNN on the optic flow data,
-  but with poor results, which makes sense, assuming the correlation between
-  optic flow and velocity are not spatially invariant. I also think it would be
-  interesting to try to calculate the optical flow using a CNN (2). The softmax layer
-  needs to be extended to support speed predictions higher than the max speed in the
-  training set. Experiment with data preparation methods before training.
+  With the level of overfitting this model resulted in, future work
+  will require much more data and possibly a totally different approach.
 
 Files:
 
@@ -51,24 +40,11 @@ Files:
     It is then shrunk by a factor of 16 with Scipy's Zoom, which uses
     spline interpolation. Then vectorized and saved in a .npy file.
 
-  avg_data.py : (deprecated)
-
-    Average data over some window size to smooth noise. I got good
-    results with a window size of 5, but am no longer using it.
-
-  c2_one_hot.py : (deprecated)
-
-    Convert speeds to one-hot with a certain precision. The original
-    network used a softmax output with cross-entropy loss, but now
-    it uses the softmax layer as a hidden layer.
-
   network.py :
 
     Tensorflow model with four hidden layers : 3 x relu + softmax
     hidden and final layers weights are not learnable (1).
-    Trains model, then saves it as .ckpt. The network still loads one hot
-    labels to arrange the hidden softmax layer, obviously inefficient,
-    will change soon.
+    Trains model, then saves it as .ckpt. 
 
   load_saved.py :
 

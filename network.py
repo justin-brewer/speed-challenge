@@ -2,50 +2,48 @@ import numpy as np
 import tensorflow as tf
 import timeit
 ###############################################################
-num_hidden_1 = 1800
-num_hidden_2 = 500
-num_hidden_3 = 250
+num_hidden_1 =1600
+num_hidden_2 = 800
+num_hidden_3 = 300
 train_drop = 0.5
-num_steps = 1200
+num_steps = 2000
 print_step = 10
 w_std = 0.02
 label_prec = 8
-train_ratio = 0.6
+max_speed = 50
+num_softmax = label_prec*max_speed
+train_ratio = 0.7
+std_order = True
+b_size = 2500
 ###############################################################
 #37
-label_list = ['train_labels_20400_one_hot_8xprec.npy',
-                'train_labels_20400.npy',]
+labels = np.float32(np.load('data/train_labels_20400.npy'))
+
 #37
-one_hot_labels = np.load('data/' + label_list[0])
-#37
-labels = np.float32(np.load('data/' + label_list[1]))
-#37
-data_list = ['train_20400x2400_flow_zoom.npy',]
-#37
-data = np.float32(np.load('data/' + data_list[0]))
-num_labels = one_hot_labels.shape[1]
+data = np.float32(np.load('data/train_20400x2400_flow_zoom.npy'))
+
+final_weights = np.float32(
+    np.arange(num_softmax)).reshape(num_softmax, 1) / label_prec
+
 d_size = data.shape[1]
 num_samples = data.shape[0]
 labels = labels.reshape(num_samples, 1)
 np.set_printoptions(precision=2)
-l_filter = (np.float32(
-    np.arange(num_labels)).reshape(num_labels, 1) / label_prec) + 1
+
 train_i = int(num_samples * train_ratio)
-b_size = 1500
 ###############################################################
-rp = np.random.permutation(num_samples)
-labels = labels[rp]
-data = data[rp,...]
-one_hot_labels = one_hot_labels[rp,...]
+# This seems to be the culprit of the overfitting. Without it,
+# results are useless. 
+# rp = np.random.permutation(num_samples)
+# labels = labels[rp]
+# data = data[rp,...]
 
-train_dataset = data[:train_i,...]
-train_labels = labels[:train_i]
-train_labels_a = one_hot_labels[:train_i,...]
-
-valid_dataset = data[train_i:,...]
-valid_labels = labels[train_i:]
-valid_labels_a = one_hot_labels[train_i:,...]
-
+if std_order:
+    train_dataset, train_labels = data[:train_i,...], labels[:train_i]
+    valid_dataset, valid_labels = data[train_i:,...], labels[train_i:]
+else:
+    train_dataset, train_labels = data[train_i:,...], labels[train_i:]
+    valid_dataset, valid_labels = data[:train_i,...], labels[:train_i]
 def mse(p, y):
     return np.mean(np.power((p-y), 2))
 ####################_DEF_GRAPH___###########################
@@ -77,9 +75,9 @@ with graph.as_default():
         tf.constant(1.0, shape=[num_hidden_3]))
 
     layer4_weights = tf.Variable(tf.truncated_normal(
-      [num_hidden_3, num_labels], stddev=w_std))
+      [num_hidden_3, num_softmax], stddev=w_std))
     layer4_biases = tf.Variable(
-        tf.constant(1.0, shape=[num_labels]))
+        tf.constant(1.0, shape=[num_softmax]))
 
     saver = tf.train.Saver()
 
@@ -95,7 +93,7 @@ with graph.as_default():
         h3 = tf.nn.relu(lc3)
 
         lc4 = tf.matmul(h3, layer4_weights) + layer4_biases
-        pred = tf.matmul(tf.nn.softmax(lc4), l_filter) - 1
+        pred = tf.matmul(tf.nn.softmax(lc4), final_weights)
 
         return pred
 
@@ -122,7 +120,7 @@ min_loss = 0
 prev_loss = 10000
 conv_timer = 0
 conv_timer_stop = 1
-conv_crit = 0.000001
+conv_crit = 0.0000001
 
 with tf.Session(graph=graph) as session:
     tf.global_variables_initializer().run()
@@ -173,4 +171,5 @@ with tf.Session(graph=graph) as session:
     model_path = ("saved_models/relu_model_%dx%dx%d_%2.2f_%d_%d.ckpt" %
         (num_hidden_1, num_hidden_2, num_hidden_3, train_ratio, step, b_size))
 
+    # uncomment to save trained parameters
     # save_path = saver.save(session, model_path)
